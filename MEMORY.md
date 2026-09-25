@@ -43,6 +43,7 @@ The long Edict brief in chat is the design reference. This file is what we follo
 - 2026-09-25: Tagline is “Rewrite the law.” Reason: it matches the title and states the player’s action. The brief’s other line, “Change the words. Change the world.”, stays unused.
 - 2026-09-25: Stack is React, TypeScript, Vite, Tailwind CSS, Phaser, and Framer Motion. Reason: the app is already scaffolded, Phaser runs the room, and React plus Tailwind run the sentence bar.
 - 2026-09-25: Save prompts in `prompts/` while building. Reason: the PDF must contain the exact prompts.
+- 2026-09-25: Write each saved prompt as a plain build instruction: what to do, what to leave out, and how to check it. Reason: the prompting score comes from specific prompts. Do not add fake typos to look human.
 - 2026-09-25: Deploy on Vercel after the game is playable. Reason: the submission needs a live link, and this is a static Vite app with no server. Vercel builds it with `npm run build` and serves the `dist` folder.
 - 2026-09-25: Split sentence, state, a pure rule reader, and the Phaser room. Reason: the sentence stays the law, and the room only follows the parsed rule.
 - 2026-09-25: One responsive web layout, breakpoint 768px. Reason: judges may open the live link on a phone or a laptop. This is not a separate mobile app.
@@ -92,7 +93,7 @@ Do these in order. One task at a time. Verify it, then start the next. Do not sk
 1. Done. Empty 2D room on the page. Verify: a quiet geometric room fills the play area.
 2. Done. Marble in the room. Verify: a circle sits in a clear spot. It cannot be moved with keys, clicks, or dragging.
 3. Done. Simple physics. Verify: a temporary DOWN gravity makes the marble fall in a straight, predictable way. No player movement controls.
-4. Walls and collision. Verify: the marble stops on walls and the floor. It does not tunnel through them.
+4. Done. Walls and collision. Verify: the marble stops on walls and the floor. It does not tunnel through them.
 5. Door. Verify: a door is visible and reads as the goal.
 6. Win check. Verify: when the marble reaches the door, play stops and the screen says “Edict Fulfilled”.
 7. Rule object. Verify: one shared shape can describe gravity, solidity, door, guard, and timing. No level-only shortcuts.
@@ -123,11 +124,12 @@ Done:
 - Design reference absorbed
 - Task 1 done: empty geometric room fills the play area
 - Task 2 done: a still marble sits in the room, with no player controls
-- Task 3 done: temporary downward gravity. The marble falls straight and is not player-controlled. Walls are not in yet, so it leaves through the bottom.
+- Task 3 done: temporary downward gravity. The marble falls straight and is not player-controlled.
+- Task 4 done: floor, ceiling, and side walls share one collider. The marble lands and stays. Fall speed is capped so it does not tunnel.
 
 Left:
 
-- Tasks 4–22. Next is walls and collision.
+- Tasks 5–22. Next is the door.
 
 ## Bugs and fixes
 

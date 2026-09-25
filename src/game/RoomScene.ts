@@ -2,10 +2,13 @@ import Phaser from 'phaser'
 import { palette } from './palette'
 
 const ROOM_INSET = 28
+const WALL_THICKNESS = 28
 const MARBLE_RADIUS = 16
+const MAX_FALL_SPEED = 640
 
 export class RoomScene extends Phaser.Scene {
   private frame?: Phaser.GameObjects.Graphics
+  private walls: Phaser.GameObjects.Rectangle[] = []
 
   constructor() {
     super('room')
@@ -14,29 +17,76 @@ export class RoomScene extends Phaser.Scene {
   create() {
     this.frame = this.add.graphics()
     this.drawFrame()
-    this.addMarble()
-    this.scale.on('resize', this.drawFrame, this)
+    this.addWalls()
+    const marble = this.addMarble()
+    this.physics.add.collider(marble, this.walls)
+    this.scale.on('resize', this.onResize, this)
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
-      this.scale.off('resize', this.drawFrame, this)
+      this.scale.off('resize', this.onResize, this)
+    })
+  }
+
+  private onResize = () => {
+    this.drawFrame()
+    this.layoutWalls()
+  }
+
+  private addWalls() {
+    for (let index = 0; index < 4; index += 1) {
+      const wall = this.add.rectangle(0, 0, WALL_THICKNESS, WALL_THICKNESS, palette.wall)
+      this.physics.add.existing(wall, true)
+      this.walls.push(wall)
+    }
+    this.layoutWalls()
+  }
+
+  private layoutWalls() {
+    const left = ROOM_INSET
+    const top = ROOM_INSET
+    const right = this.scale.width - ROOM_INSET
+    const bottom = this.scale.height - ROOM_INSET
+    const innerWidth = Math.max(WALL_THICKNESS, right - left)
+    const innerHeight = Math.max(WALL_THICKNESS, bottom - top)
+    const places = [
+      { x: left + innerWidth / 2, y: bottom - WALL_THICKNESS / 2, w: innerWidth, h: WALL_THICKNESS },
+      { x: left + innerWidth / 2, y: top + WALL_THICKNESS / 2, w: innerWidth, h: WALL_THICKNESS },
+      { x: left + WALL_THICKNESS / 2, y: top + innerHeight / 2, w: WALL_THICKNESS, h: innerHeight },
+      { x: right - WALL_THICKNESS / 2, y: top + innerHeight / 2, w: WALL_THICKNESS, h: innerHeight },
+    ]
+
+    this.walls.forEach((wall, index) => {
+      const place = places[index]
+      wall.setPosition(place.x, place.y)
+      wall.setDisplaySize(place.w, place.h)
+      const body = wall.body
+      if (body instanceof Phaser.Physics.Arcade.StaticBody) {
+        body.setSize(place.w, place.h, true)
+        body.updateFromGameObject()
+      }
     })
   }
 
   private addMarble() {
     const marble = this.add.circle(
       this.scale.width / 2,
-      ROOM_INSET + MARBLE_RADIUS + 48,
+      ROOM_INSET + WALL_THICKNESS + MARBLE_RADIUS + 48,
       MARBLE_RADIUS,
       palette.marble,
     )
+    marble.setDepth(1)
     this.physics.add.existing(marble)
 
     const body = marble.body
-    if (!(body instanceof Phaser.Physics.Arcade.Body)) return
+    if (body instanceof Phaser.Physics.Arcade.Body) {
+      body.setCircle(MARBLE_RADIUS)
+      body.setAllowGravity(true)
+      body.setBounce(0)
+      body.setCollideWorldBounds(false)
+      body.setMaxVelocity(400, MAX_FALL_SPEED)
+      body.setVelocity(0, 0)
+    }
 
-    body.setCircle(MARBLE_RADIUS)
-    body.setAllowGravity(true)
-    body.setCollideWorldBounds(false)
-    body.setVelocity(0, 0)
+    return marble
   }
 
   private drawFrame = () => {
