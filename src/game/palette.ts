@@ -7,4 +7,5 @@ export const palette = {
   wall: 0x2a3142,
   marble: 0xe4dcc8,
   door: 0xc6a36a,
+  word: '#d7c4a3',
 } as const

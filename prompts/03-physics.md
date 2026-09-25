@@ -1,9 +1,18 @@
 # 03 — Downward fall
 
-The marble is sitting in the room. Make it fall straight down.
+Already in place: a still marble in the room. The player cannot move it.
 
-Use Arcade physics. Gravity should only pull downward, with no sideways speed. This gravity is temporary. Later the sentence will decide the direction, so keep this value in one obvious place and do not build the rule parser yet.
+Do this:
 
-Still no player controls. Do not add walls or a floor in this step. I know the marble will leave through the bottom. That is fine until the next task.
+- Use Arcade physics.
+- Pull the marble straight down. Horizontal speed stays 0.
+- Keep this gravity in one obvious place. The sentence will own the direction later.
 
-Tell me to refresh and watch it drop in a straight line.
+Leave out:
+
+- No walls, floor, door, sentence, or player controls.
+- No rule parser yet.
+
+Check:
+
+- Refresh the page. The marble drops in a straight line and leaves through the bottom.

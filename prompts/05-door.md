@@ -1,11 +1,21 @@
 # 05 — Door
 
-Edict is a puzzle game. The player does not move the marble. Right now the marble only falls down and lands on the floor. Your job is the door, and nothing past that.
+Already in place: the room, the marble, downward gravity, and four walls. The marble lands on the floor. The player does not move the marble.
 
-Look at `src/game/RoomScene.ts` before you change anything. The room, marble, gravity, and four walls already work. Reuse them. Do not rewrite the scene.
+Do this:
 
-Add one door inside the room, on the right wall, clear of the floor. It should read as the goal at a glance: a simple tall rectangle, different from the walls, minimal like the rest of the room. Keep it visible after the window resizes.
+- Read `src/game/RoomScene.ts` before editing. Reuse it. Do not rewrite the scene.
+- Add one door on the right wall, clear of the floor.
+- Draw it as a tall rectangle that is clearly different from the walls.
+- Keep it in place when the window resizes.
 
-Do not open or close it. Do not detect a win. Do not show “Edict Fulfilled”. Do not add a sentence, buttons, sound, or player controls. Gravity stays straight down, so the marble should still fall and rest on the floor. The door is only a marker for now.
+Leave out:
 
-When you are done, say how to check it. We will refresh `npm run dev` and look for a door that is obviously the goal, while the marble still lands on the floor.
+- Do not open or close the door.
+- Do not detect a win or show “Edict Fulfilled”.
+- No sentence, buttons, sound, or player controls.
+- Gravity stays straight down.
+
+Check:
+
+- Refresh the dev page. The door reads as the goal, and the marble still lands on the floor.
