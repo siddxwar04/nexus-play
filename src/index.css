@@ -1,1 +1,61 @@
 @import "tailwindcss";
+
+html,
+body,
+#root {
+  overflow-x: hidden;
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.edict-page {
+  background-color: #101218;
+  background-image: radial-gradient(ellipse 90% 42% at 50% -10%, #243044 0%, transparent 68%);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.room-stage {
+  box-shadow:
+    inset 0 0 0 1px rgb(106 117 140 / 0.45),
+    0 18px 50px rgb(0 0 0 / 0.28);
+}
+
+.law {
+  font-family: Newsreader, ui-serif, Georgia, serif;
+}
+
+.law-word {
+  color: #d7c4a3;
+  border-bottom: 1px solid rgb(215 196 163 / 0.75);
+  background-color: transparent;
+  text-shadow: none;
+  transition:
+    text-shadow 180ms ease,
+    background-color 180ms ease;
+}
+
+.law-word:hover,
+.law-word:focus-visible,
+.law-word-open {
+  text-shadow: 0 0 16px rgb(215 196 163 / 0.55);
+  background-color: rgb(215 196 163 / 0.1);
+}
+
+.law p + p {
+  margin-top: 0.15em;
+}
+
+.quiet-control {
+  color: #9a958a;
+  transition: color 160ms ease;
+}
+
+.quiet-control:hover:not(:disabled),
+.quiet-control:focus-visible {
+  color: #e7e4dc;
+}

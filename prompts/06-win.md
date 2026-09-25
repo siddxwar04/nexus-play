@@ -1,20 +1,21 @@
 # 06 — Win check
 
-Already in place: the room, the marble, downward gravity, four walls, and a door on the right. The marble lands on the floor. It cannot reach the door while gravity only pulls down.
+Already in place: the room, the marble, downward gravity, four walls, and a door on the right wall. The player does not move the marble.
 
 Do this:
 
-- Read `src/game/RoomScene.ts` before editing. Reuse the marble and the door. Do not rewrite the scene.
-- When the marble overlaps the door, stop the marble and show “Edict Fulfilled”.
-- For this check only, start the marble just above the door so a refresh makes it fall onto the door.
-- Leave a short code note that this start spot is temporary until gravity can point right.
+- When the marble touches the door, stop the marble and end play for that room.
+- Show “Edict Fulfilled” over the room.
+- Show how many rule changes the room took. Until the sentence exists, that number is 0.
+- Offer CONTINUE. Until more rooms exist, CONTINUE restarts the same room.
 
 Leave out:
 
-- No next-room button, rule-change count, sound, sentence, or player controls.
-- Gravity stays straight down.
-- Keep the message short.
+- No sentence, rule object, undo, sound, or player controls.
+- Do not open or close the door. It is always open for now.
 
 Check:
 
-- Refresh the dev page. The marble meets the door, play stops, and the page says “Edict Fulfilled”.
+- Refresh the dev page. Lift the marble’s start over the door for the test. It falls in, stops, and “Edict Fulfilled” appears with 0.
+
+Note: this step was built inside task 18 rather than on its own, so the shipped win screen is described there.

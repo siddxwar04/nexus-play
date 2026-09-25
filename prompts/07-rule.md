@@ -1,6 +1,6 @@
 # 07 — Rule object
 
-Already in place: the room plays with temporary downward gravity. The win check is a separate task in `src/game/RoomScene.ts`.
+Already in place: the room, the marble, four walls, and a door. Gravity is a fixed downward value in the scene. The player does not move the marble.
 
 Do this:
 

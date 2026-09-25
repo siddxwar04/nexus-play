@@ -1,67 +1,108 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { useState } from 'react'
-import { setGravity as publishGravity } from '../game/liveRule'
+import { useEffect, useState } from 'react'
+import { getChangeCount, getRoom, getRule, rewrite, subscribeRule } from '../game/liveRule'
 import { palette } from '../game/palette'
-import { directions, type Direction } from '../game/rule'
-
-function label(direction: Direction) {
-  return direction.toUpperCase()
-}
+import { tailFor, wordsFor, type Slot } from '../game/rule'
+import { playCue } from '../game/sound'
 
 export function SentenceBar() {
-  const [gravity, setGravity] = useState<Direction>('down')
-  const [open, setOpen] = useState(false)
-  const choices = directions.filter((direction) => direction !== gravity)
+  const [rule, setRule] = useState(getRule())
+  const [room, setRoom] = useState(getRoom())
+  const [count, setCount] = useState(getChangeCount())
+  const [openSlot, setOpenSlot] = useState<Slot | null>(null)
 
-  function choose(direction: Direction) {
-    setGravity(direction)
-    publishGravity(direction)
-    setOpen(false)
-  }
+  useEffect(() => {
+    return subscribeRule((update) => {
+      setRule(update.rule)
+      setRoom(getRoom())
+      setCount(getChangeCount())
+      if (update.restore || update.resetRoom || update.won) setOpenSlot(null)
+    })
+  }, [])
+
+  const choices = openSlot ? wordsFor(openSlot, rule).filter((word) => !word.active) : []
+  const over = count > room.par
 
   return (
-    <div className="text-center">
+    <div className="mx-auto max-w-3xl text-center">
       <div
-        className="text-2xl tracking-[0.16em] sm:text-3xl"
+        className="law text-balance text-xl leading-tight sm:text-3xl sm:leading-snug"
         style={{ color: palette.ink }}
       >
-        GRAVITY IS{' '}
-        <button
-          type="button"
-          className="cursor-pointer border-b px-1"
-          style={{ color: palette.word, borderColor: palette.word }}
-          onClick={() => setOpen((value) => !value)}
-        >
-          <AnimatePresence mode="wait">
-            <motion.span
-              key={gravity}
-              className="inline-block"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.18 }}
-            >
-              [{label(gravity)}]
-            </motion.span>
-          </AnimatePresence>
-        </button>
-        .
+        {room.clauses.map((clause) => {
+          const current = wordsFor(clause.slot, rule).find((word) => word.active)?.label ?? ''
+          const isOpen = openSlot === clause.slot
+          return (
+            <p key={clause.slot}>
+              {clause.lead}{' '}
+              <button
+                type="button"
+                className={`law-word cursor-pointer px-1.5 ${isOpen ? 'law-word-open' : ''}`}
+                aria-expanded={isOpen}
+                aria-label={`${clause.lead} ${current}. Change this word.`}
+                onClick={() => setOpenSlot(isOpen ? null : clause.slot)}
+              >
+                <AnimatePresence mode="wait">
+                  <motion.span
+                    key={current}
+                    className="inline-block"
+                    initial={{ opacity: 0, y: 6, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -6, scale: 1.03 }}
+                    transition={{ duration: 0.18 }}
+                  >
+                    [{current}]
+                  </motion.span>
+                </AnimatePresence>
+              </button>
+              {tailFor(clause, rule)}.
+            </p>
+          )
+        })}
       </div>
-      {open ? (
-        <div className="mt-3 flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm tracking-[0.18em]">
-          {choices.map((direction) => (
-            <button
-              key={direction}
-              type="button"
-              className="cursor-pointer border-b"
-              style={{ color: palette.word, borderColor: palette.word }}
-              onClick={() => choose(direction)}
+      {/* This row keeps one height whether a word is open or not, so the room below never resizes mid-flight. */}
+      <div className="relative mt-2 min-h-12 sm:mt-3">
+        <AnimatePresence mode="wait">
+          {openSlot ? (
+            <motion.div
+              key={openSlot}
+              className="law absolute inset-x-0 top-0 flex flex-wrap justify-center gap-x-5 gap-y-1 text-base sm:gap-x-6 sm:text-lg"
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.16 }}
             >
-              {label(direction)}
-            </button>
-          ))}
-        </div>
-      ) : null}
+              {choices.map((word) => (
+                <button
+                  key={word.label}
+                  type="button"
+                  className="law-word min-h-11 cursor-pointer px-2"
+                  onClick={() => {
+                    playCue('swap')
+                    rewrite(word.patch)
+                    setOpenSlot(null)
+                  }}
+                >
+                  {word.label}
+                </button>
+              ))}
+            </motion.div>
+          ) : (
+            <motion.p
+              key="count"
+              className="absolute inset-x-0 top-0 pt-3 text-[10px] tracking-[0.22em]"
+              style={{ color: over ? palette.doorInk : palette.mute }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: over ? 0.9 : 0.8 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.16 }}
+              aria-live="polite"
+            >
+              {count} OF {room.par} {room.par === 1 ? 'REWRITE' : 'REWRITES'}
+            </motion.p>
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   )
 }
