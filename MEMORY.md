@@ -90,8 +90,8 @@ The long Edict brief in chat is the design reference. This file is what we follo
 Do these in order. One task at a time. Verify it, then start the next. Do not skip ahead.
 
 1. Done. Empty 2D room on the page. Verify: a quiet geometric room fills the play area.
-2. Marble in the room. Verify: a circle sits in a clear spot. It cannot be moved with keys, clicks, or dragging.
-3. Simple physics. Verify: a temporary DOWN gravity makes the marble fall in a straight, predictable way. No player movement controls.
+2. Done. Marble in the room. Verify: a circle sits in a clear spot. It cannot be moved with keys, clicks, or dragging.
+3. Done. Simple physics. Verify: a temporary DOWN gravity makes the marble fall in a straight, predictable way. No player movement controls.
 4. Walls and collision. Verify: the marble stops on walls and the floor. It does not tunnel through them.
 5. Door. Verify: a door is visible and reads as the goal.
 6. Win check. Verify: when the marble reaches the door, play stops and the screen says “Edict Fulfilled”.
@@ -122,10 +122,12 @@ Done:
 - Architecture diagram agreed
 - Design reference absorbed
 - Task 1 done: empty geometric room fills the play area
+- Task 2 done: a still marble sits in the room, with no player controls
+- Task 3 done: temporary downward gravity. The marble falls straight and is not player-controlled. Walls are not in yet, so it leaves through the bottom.
 
 Left:
 
-- Tasks 2–22. Next is the marble, with no player movement.
+- Tasks 4–22. Next is walls and collision.
 
 ## Bugs and fixes
 

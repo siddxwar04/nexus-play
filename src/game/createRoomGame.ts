@@ -13,6 +13,12 @@ export function createRoomGame(parent: HTMLElement) {
       width: Math.max(parent.clientWidth, 320),
       height: Math.max(parent.clientHeight, 240),
     },
+    physics: {
+      default: 'arcade',
+      arcade: {
+        gravity: { x: 0, y: 980 },
+      },
+    },
     scene: [RoomScene],
   })
 }
