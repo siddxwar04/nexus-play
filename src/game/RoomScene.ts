@@ -1,5 +1,7 @@
 import Phaser from 'phaser'
+import { subscribeRule } from './liveRule'
 import { palette } from './palette'
+import { gravityVector, type Direction } from './rule'
 
 const ROOM_INSET = 28
 const WALL_THICKNESS = 28
@@ -12,6 +14,7 @@ export class RoomScene extends Phaser.Scene {
   private frame?: Phaser.GameObjects.Graphics
   private walls: Phaser.GameObjects.Rectangle[] = []
   private door?: Phaser.GameObjects.Rectangle
+  private marbleBody?: Phaser.Physics.Arcade.Body
 
   constructor() {
     super('room')
@@ -24,10 +27,20 @@ export class RoomScene extends Phaser.Scene {
     this.addDoor()
     const marble = this.addMarble()
     this.physics.add.collider(marble, this.walls)
+    const stopRule = subscribeRule((rule) => {
+      this.applyGravity(rule.gravity)
+    })
     this.scale.on('resize', this.onResize, this)
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      stopRule()
       this.scale.off('resize', this.onResize, this)
     })
+  }
+
+  private applyGravity(direction: Direction) {
+    const vector = gravityVector(direction)
+    this.physics.world.gravity.set(vector.x, vector.y)
+    this.marbleBody?.setVelocity(0, 0)
   }
 
   private onResize = () => {
@@ -101,8 +114,9 @@ export class RoomScene extends Phaser.Scene {
       body.setAllowGravity(true)
       body.setBounce(0)
       body.setCollideWorldBounds(false)
-      body.setMaxVelocity(400, MAX_FALL_SPEED)
+      body.setMaxVelocity(MAX_FALL_SPEED, MAX_FALL_SPEED)
       body.setVelocity(0, 0)
+      this.marbleBody = body
     }
 
     return marble
