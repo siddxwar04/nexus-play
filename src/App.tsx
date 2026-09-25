@@ -1,5 +1,6 @@
 import { GameRoom } from './components/GameRoom'
 import { SentenceBar } from './components/SentenceBar'
+import { UndoControl } from './components/UndoControl'
 import { palette } from './game/palette'
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
       <main className="min-h-0 flex-1 px-4 pb-4">
         <GameRoom />
       </main>
+      <UndoControl />
     </div>
   )
 }

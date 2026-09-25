@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { useState } from 'react'
-import { setGravity as publishGravity } from '../game/liveRule'
+import { useEffect, useState } from 'react'
+import { setGravity as publishGravity, subscribeRule } from '../game/liveRule'
 import { palette } from '../game/palette'
 import { directions, type Direction } from '../game/rule'
 
@@ -13,8 +13,14 @@ export function SentenceBar() {
   const [open, setOpen] = useState(false)
   const choices = directions.filter((direction) => direction !== gravity)
 
+  useEffect(() => {
+    return subscribeRule((update) => {
+      setGravity(update.rule.gravity)
+      if (update.restore) setOpen(false)
+    })
+  }, [])
+
   function choose(direction: Direction) {
-    setGravity(direction)
     publishGravity(direction)
     setOpen(false)
   }

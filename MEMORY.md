@@ -104,8 +104,8 @@ Do these in order. One task at a time. Verify it, then start the next. Do not sk
 9. Done. Sentence. Verify: the room shows GRAVITY IS [DOWN]. The bracketed word looks editable. It is not a settings menu. File: `src/components/SentenceBar.tsx`. The word does not swap yet.
 10. Done. Word swap. Verify: choosing UP, LEFT, or RIGHT replaces the word in the sentence with a short animation. The marble’s direction does not change yet.
 11. Done. Sentence drives physics. Verify: changing the word changes the marble’s direction immediately. The player still cannot push the marble.
-12. Undo. Verify: one undo restores the previous word, rule, and marble.
-13. Restart. Verify: the Restart control and the R key restore the room’s original sentence and marble.
+12. Done. Undo. Verify: one undo restores the previous word, rule, and marble.
+13. Done. Restart. Verify: the Restart control and the R key restore the room’s original sentence and marble.
 14. Room 2, solidity. Verify: BLUE BLOCKS ARE [SOLID] can become GHOST, and the marble passes through only when they are GHOST.
 15. Room 3, door condition. Verify: the door opens only when the edited condition is met.
 16. Room 4, guard. Verify: TOWARD, AWAY, and DOOR change where the guard moves. The marble is still not player-controlled.
@@ -134,12 +134,14 @@ Done:
 - Task 8 done: `gravityVector()` maps down, up, left, and right through one rule. The live room still uses down, so the marble still falls to the floor. `RoomScene.ts` was not edited.
 - Task 9 done: the page shows GRAVITY IS [DOWN]. The bracketed word is underlined and highlighted.
 - Task 10 done: clicking the word offers UP, LEFT, and RIGHT. The chosen word replaces it with a short fade.
-- Task 11 done: the chosen word updates the live rule, and the room gravity follows `gravityVector()` at once. The marble speed is cleared on the change. The player still cannot push it. `RoomScene.ts` was only changed to apply that gravity.
+- Task 11 done: the chosen word updates the live rule, and the room gravity follows `gravityVector()` at once. The marble speed is cleared on the change. The player still cannot push it.
+- Task 12 done: UNDO steps back one word change and puts the marble back where it was. The control stays dull until a word changes.
+- Task 13 done: RESTART and the R key return the sentence to DOWN, put the marble at its start, and clear undo history.
 
 Left:
 
 - Task 6 is with the teammate and is not verified yet. Prompt: `prompts/06-win.md`. Do not build the win message here while she is on it.
-- Tasks 12–22. Next is undo.
+- Tasks 14–22. Next is room 2, solid and ghost blocks.
 - The tagline prompt in `prompts/header-tagline.md` was not the task she was given.
 
 ## Bugs and fixes

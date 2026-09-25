@@ -1,7 +1,13 @@
 import Phaser from 'phaser'
-import { subscribeRule } from './liveRule'
+import {
+  clearMarbleCapture,
+  setMarbleCapture,
+  setMarbleOrigin,
+  subscribeRule,
+  type RuleUpdate,
+} from './liveRule'
 import { palette } from './palette'
-import { gravityVector, type Direction } from './rule'
+import { gravityVector } from './rule'
 
 const ROOM_INSET = 28
 const WALL_THICKNESS = 28
@@ -15,6 +21,7 @@ export class RoomScene extends Phaser.Scene {
   private walls: Phaser.GameObjects.Rectangle[] = []
   private door?: Phaser.GameObjects.Rectangle
   private marbleBody?: Phaser.Physics.Arcade.Body
+  private marble?: Phaser.GameObjects.Arc
 
   constructor() {
     super('room')
@@ -27,20 +34,47 @@ export class RoomScene extends Phaser.Scene {
     this.addDoor()
     const marble = this.addMarble()
     this.physics.add.collider(marble, this.walls)
-    const stopRule = subscribeRule((rule) => {
-      this.applyGravity(rule.gravity)
+    const stopRule = subscribeRule((update) => {
+      this.applyRule(update)
     })
+    setMarbleCapture(() => this.captureMarble())
+    const origin = this.captureMarble()
+    if (origin) setMarbleOrigin(origin)
     this.scale.on('resize', this.onResize, this)
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       stopRule()
+      clearMarbleCapture()
       this.scale.off('resize', this.onResize, this)
     })
   }
 
-  private applyGravity(direction: Direction) {
-    const vector = gravityVector(direction)
+  private captureMarble() {
+    if (!this.marble || !this.marbleBody) return null
+
+    return {
+      x: this.marble.x,
+      y: this.marble.y,
+      vx: this.marbleBody.velocity.x,
+      vy: this.marbleBody.velocity.y,
+    }
+  }
+
+  private applyRule(update: RuleUpdate) {
+    const vector = gravityVector(update.rule.gravity)
     this.physics.world.gravity.set(vector.x, vector.y)
-    this.marbleBody?.setVelocity(0, 0)
+
+    const body = this.marbleBody
+    const marble = this.marble
+    if (!body || !marble) return
+
+    const restore = update.restore
+    if (!restore) {
+      body.setVelocity(0, 0)
+      return
+    }
+
+    body.reset(restore.x, restore.y)
+    body.setVelocity(restore.vx, restore.vy)
   }
 
   private onResize = () => {
@@ -116,6 +150,7 @@ export class RoomScene extends Phaser.Scene {
       body.setCollideWorldBounds(false)
       body.setMaxVelocity(MAX_FALL_SPEED, MAX_FALL_SPEED)
       body.setVelocity(0, 0)
+      this.marble = marble
       this.marbleBody = body
     }
 
