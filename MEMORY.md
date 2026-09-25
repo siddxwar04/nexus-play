@@ -98,7 +98,7 @@ Do these in order. One task at a time. Verify it, then start the next. Do not sk
 4. Done. Walls and collision. Verify: the marble stops on walls and the floor. It does not tunnel through them.
 5. Done. Door. Verify: a door is visible and reads as the goal. Prompt: `prompts/05-door.md`.
 6. Handed to the teammate, not verified. Win check. Verify: when the marble reaches the door, play stops and the screen says “Edict Fulfilled”. Prompt: `prompts/06-win.md`.
-7. Rule object. Verify: one shared shape can describe gravity, solidity, door, guard, and timing. No level-only shortcuts.
+7. Done. Rule object. Verify: one shared shape can describe gravity, solidity, door, guard, and timing. No level-only shortcuts. File: `src/game/rule.ts`. Not applied to the room yet.
 8. Gravity values. Verify: DOWN, UP, LEFT, and RIGHT are the same gravity rule with a different direction.
 9. Sentence. Verify: the room shows GRAVITY IS [DOWN]. The bracketed word looks editable. It is not a settings menu.
 10. Word swap. Verify: choosing UP, LEFT, or RIGHT replaces the word in the sentence with a short animation.
@@ -129,11 +129,12 @@ Done:
 - Task 3 done: temporary downward gravity. The marble falls straight and is not player-controlled.
 - Task 4 done: floor, ceiling, and side walls share one collider. The marble lands and stays. Fall speed is capped so it does not tunnel.
 - Task 5 done: a door marker sits on the right wall, above the floor. It does not open and it does not detect a win.
+- Task 7 done: `src/game/rule.ts` holds one `Rule` shape for gravity, solidity, door, guard, and timing. `createRule()` starts with gravity down. The room does not use it yet. Reason: task 6 is in `RoomScene.ts`, so this task stayed in a new file.
 
 Left:
 
 - Task 6 is with the teammate and is not verified yet. Prompt: `prompts/06-win.md`. Do not build the win check here while she is on it.
-- Tasks 7–22 wait until her win check is verified.
+- Tasks 8–22. Next is gravity values on that same rule.
 - The tagline prompt in `prompts/header-tagline.md` was not the task she was given.
 
 ## Bugs and fixes
