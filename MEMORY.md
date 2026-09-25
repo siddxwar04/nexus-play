@@ -44,6 +44,7 @@ The long Edict brief in chat is the design reference. This file is what we follo
 - 2026-09-25: Stack is React, TypeScript, Vite, Tailwind CSS, Phaser, and Framer Motion. Reason: the app is already scaffolded, Phaser runs the room, and React plus Tailwind run the sentence bar.
 - 2026-09-25: Save prompts in `prompts/` while building. Reason: the PDF must contain the exact prompts.
 - 2026-09-25: Write each saved prompt as a plain build instruction: what to do, what to leave out, and how to check it. Reason: the prompting score comes from specific prompts. Do not add fake typos to look human.
+- 2026-09-25: Every used prompt in `prompts/` uses the same four parts: already in place, do this, leave out, check. Reason: the PDF should read as one clear build sequence. `prompts/header-tagline.md` stays marked not used.
 - 2026-09-25: Deploy on Vercel after the game is playable. Reason: the submission needs a live link, and this is a static Vite app with no server. Vercel builds it with `npm run build` and serves the `dist` folder.
 - 2026-09-25: Split sentence, state, a pure rule reader, and the Phaser room. Reason: the sentence stays the law, and the room only follows the parsed rule.
 - 2026-09-25: One responsive web layout, breakpoint 768px. Reason: judges may open the live link on a phone or a laptop. This is not a separate mobile app.
@@ -99,10 +100,10 @@ Do these in order. One task at a time. Verify it, then start the next. Do not sk
 5. Done. Door. Verify: a door is visible and reads as the goal. Prompt: `prompts/05-door.md`.
 6. Handed to the teammate, not verified. Win check. Verify: when the marble reaches the door, play stops and the screen says “Edict Fulfilled”. Prompt: `prompts/06-win.md`.
 7. Done. Rule object. Verify: one shared shape can describe gravity, solidity, door, guard, and timing. No level-only shortcuts. File: `src/game/rule.ts`. Not applied to the room yet.
-8. Gravity values. Verify: DOWN, UP, LEFT, and RIGHT are the same gravity rule with a different direction.
-9. Sentence. Verify: the room shows GRAVITY IS [DOWN]. The bracketed word looks editable. It is not a settings menu.
-10. Word swap. Verify: choosing UP, LEFT, or RIGHT replaces the word in the sentence with a short animation.
-11. Sentence drives physics. Verify: changing the word changes the marble’s direction immediately. The player still cannot push the marble.
+8. Done. Gravity values. Verify: DOWN, UP, LEFT, and RIGHT are the same gravity rule with a different direction. `gravityVector()` in `src/game/rule.ts`. The room still uses down.
+9. Done. Sentence. Verify: the room shows GRAVITY IS [DOWN]. The bracketed word looks editable. It is not a settings menu. File: `src/components/SentenceBar.tsx`. The word does not swap yet.
+10. Done. Word swap. Verify: choosing UP, LEFT, or RIGHT replaces the word in the sentence with a short animation. The marble’s direction does not change yet.
+11. Done. Sentence drives physics. Verify: changing the word changes the marble’s direction immediately. The player still cannot push the marble.
 12. Undo. Verify: one undo restores the previous word, rule, and marble.
 13. Restart. Verify: the Restart control and the R key restore the room’s original sentence and marble.
 14. Room 2, solidity. Verify: BLUE BLOCKS ARE [SOLID] can become GHOST, and the marble passes through only when they are GHOST.
@@ -129,12 +130,16 @@ Done:
 - Task 3 done: temporary downward gravity. The marble falls straight and is not player-controlled.
 - Task 4 done: floor, ceiling, and side walls share one collider. The marble lands and stays. Fall speed is capped so it does not tunnel.
 - Task 5 done: a door marker sits on the right wall, above the floor. It does not open and it does not detect a win.
-- Task 7 done: `src/game/rule.ts` holds one `Rule` shape for gravity, solidity, door, guard, and timing. `createRule()` starts with gravity down. The room does not use it yet. Reason: task 6 is in `RoomScene.ts`, so this task stayed in a new file.
+- Task 7 done: `src/game/rule.ts` holds one `Rule` shape for gravity, solidity, door, guard, and timing. `createRule()` starts with gravity down.
+- Task 8 done: `gravityVector()` maps down, up, left, and right through one rule. The live room still uses down, so the marble still falls to the floor. `RoomScene.ts` was not edited.
+- Task 9 done: the page shows GRAVITY IS [DOWN]. The bracketed word is underlined and highlighted.
+- Task 10 done: clicking the word offers UP, LEFT, and RIGHT. The chosen word replaces it with a short fade.
+- Task 11 done: the chosen word updates the live rule, and the room gravity follows `gravityVector()` at once. The marble speed is cleared on the change. The player still cannot push it. `RoomScene.ts` was only changed to apply that gravity.
 
 Left:
 
-- Task 6 is with the teammate and is not verified yet. Prompt: `prompts/06-win.md`. Do not build the win check here while she is on it.
-- Tasks 8–22. Next is gravity values on that same rule.
+- Task 6 is with the teammate and is not verified yet. Prompt: `prompts/06-win.md`. Do not build the win message here while she is on it.
+- Tasks 12–22. Next is undo.
 - The tagline prompt in `prompts/header-tagline.md` was not the task she was given.
 
 ## Bugs and fixes

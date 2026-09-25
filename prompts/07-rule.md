@@ -1,9 +1,20 @@
 # 07 — Rule object
 
-The win check is someone else’s task in `src/game/RoomScene.ts`. Do not edit that file.
+Already in place: the room plays with temporary downward gravity. The win check is a separate task in `src/game/RoomScene.ts`.
 
-Add one shared rule shape in a new file, `src/game/rule.ts`. The same object must be able to describe gravity, solidity, the door condition, guard movement, and timing. One function should build that object, with gravity starting as down.
+Do this:
 
-Do not apply the rule to the marble yet. Do not add sentences, word swaps, rooms, or player controls. The page should look the same as before.
+- Add `src/game/rule.ts`.
+- One `Rule` type must be able to hold gravity, solidity, the door condition, guard movement, and timing.
+- Add `createRule()`. Gravity starts as down. The other fields have a starting value too.
 
-When you are done, the check is the file: one `Rule` type covers all five, and `createRule()` returns gravity down plus the other fields.
+Leave out:
+
+- Do not edit `src/game/RoomScene.ts`.
+- Do not apply the rule to the marble yet.
+- No sentence, word swap, extra rooms, or player controls.
+
+Check:
+
+- The page looks the same as before.
+- `createRule()` returns one object that includes all five fields, with gravity set to down.

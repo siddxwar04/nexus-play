@@ -1,5 +1,6 @@
 import Phaser from 'phaser'
 import { palette } from './palette'
+import { createRule, gravityVector } from './rule'
 import { RoomScene } from './RoomScene'
 
 export function createRoomGame(parent: HTMLElement) {
@@ -16,7 +17,7 @@ export function createRoomGame(parent: HTMLElement) {
     physics: {
       default: 'arcade',
       arcade: {
-        gravity: { x: 0, y: 980 },
+        gravity: gravityVector(createRule().gravity),
       },
     },
     scene: [RoomScene],

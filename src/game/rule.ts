@@ -24,3 +24,18 @@ export function createRule(overrides: Partial<Rule> = {}): Rule {
     ...overrides,
   }
 }
+
+const GRAVITY_SPEED = 980
+
+export function gravityVector(direction: Direction): { x: number; y: number } {
+  switch (direction) {
+    case 'down':
+      return { x: 0, y: GRAVITY_SPEED }
+    case 'up':
+      return { x: 0, y: -GRAVITY_SPEED }
+    case 'left':
+      return { x: -GRAVITY_SPEED, y: 0 }
+    case 'right':
+      return { x: GRAVITY_SPEED, y: 0 }
+  }
+}

@@ -1,11 +1,17 @@
-# Easy task — Tagline
+# Not used — Tagline
 
-This is a small page change. Do not open the game scene.
+This prompt was drafted and not given. The teammate was given task 6, the win check, instead.
 
-In `src/App.tsx`, under the word EDICT, add the tagline:
+Do this, only if that assignment changes:
 
-Rewrite the law.
+- In `src/App.tsx`, under EDICT, add the tagline “Rewrite the law.”
+- Use the colors in `src/game/palette.ts`.
 
-Use the colors already in `src/game/palette.ts`. Keep it small and quiet. Do not change `src/game/RoomScene.ts`. Do not add a door, physics, a sentence inside the room, or buttons.
+Leave out:
 
-Check it at http://localhost:5174/. The top of the page should show EDICT, then Rewrite the law. The room, marble, and door should look the same as before.
+- Do not edit `src/game/RoomScene.ts`.
+- No door, physics, sentence, or buttons.
+
+Check:
+
+- The top of the page shows EDICT, then Rewrite the law. The room looks unchanged.
