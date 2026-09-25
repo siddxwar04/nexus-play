@@ -5,10 +5,13 @@ const ROOM_INSET = 28
 const WALL_THICKNESS = 28
 const MARBLE_RADIUS = 16
 const MAX_FALL_SPEED = 640
+const DOOR_WIDTH = 18
+const DOOR_HEIGHT = 84
 
 export class RoomScene extends Phaser.Scene {
   private frame?: Phaser.GameObjects.Graphics
   private walls: Phaser.GameObjects.Rectangle[] = []
+  private door?: Phaser.GameObjects.Rectangle
 
   constructor() {
     super('room')
@@ -18,6 +21,7 @@ export class RoomScene extends Phaser.Scene {
     this.frame = this.add.graphics()
     this.drawFrame()
     this.addWalls()
+    this.addDoor()
     const marble = this.addMarble()
     this.physics.add.collider(marble, this.walls)
     this.scale.on('resize', this.onResize, this)
@@ -29,6 +33,7 @@ export class RoomScene extends Phaser.Scene {
   private onResize = () => {
     this.drawFrame()
     this.layoutWalls()
+    this.layoutDoor()
   }
 
   private addWalls() {
@@ -64,6 +69,20 @@ export class RoomScene extends Phaser.Scene {
         body.updateFromGameObject()
       }
     })
+  }
+
+  private addDoor() {
+    this.door = this.add.rectangle(0, 0, DOOR_WIDTH, DOOR_HEIGHT, palette.door)
+    this.door.setDepth(1)
+    this.layoutDoor()
+  }
+
+  private layoutDoor() {
+    if (!this.door) return
+
+    const rightInner = this.scale.width - ROOM_INSET - WALL_THICKNESS
+    const floorTop = this.scale.height - ROOM_INSET - WALL_THICKNESS
+    this.door.setPosition(rightInner - DOOR_WIDTH / 2, floorTop - DOOR_HEIGHT / 2)
   }
 
   private addMarble() {

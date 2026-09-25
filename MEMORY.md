@@ -50,6 +50,7 @@ The long Edict brief in chat is the design reference. This file is what we follo
 - 2026-09-25: The marble has no direct controls. Reason: the master brief says the player rewrites the rule, and the marble moves because of that rule.
 - 2026-09-25: Undo and restart are part of the first playable game. Reason: a wrong word must be reversible without treating it as a loss. Restart key is R.
 - 2026-09-25: Build from the numbered task list below, one task at a time, and verify before the next. Reason: the brief says build, test, then move on, and the core mechanic stays intact.
+- 2026-09-25: Do not commit, push, or open a pull request, and do not suggest it. Reason: the user said not to show or try a commit.
 
 ## Tech stack
 
@@ -85,6 +86,7 @@ The long Edict brief in chat is the design reference. This file is what we follo
 - Do not add a live model, accounts, level editor, shop, story, leaderboard, or a separate mobile app.
 - Do not switch to another game concept unless this file is updated first.
 - Work on one task at a time. Smallest change that keeps the rule-editing mechanic.
+- Do not commit, push, or open a pull request. Do not ask to commit or show commit steps unless the user asks for that exact thing.
 
 ## Tasks
 
@@ -94,8 +96,8 @@ Do these in order. One task at a time. Verify it, then start the next. Do not sk
 2. Done. Marble in the room. Verify: a circle sits in a clear spot. It cannot be moved with keys, clicks, or dragging.
 3. Done. Simple physics. Verify: a temporary DOWN gravity makes the marble fall in a straight, predictable way. No player movement controls.
 4. Done. Walls and collision. Verify: the marble stops on walls and the floor. It does not tunnel through them.
-5. Door. Verify: a door is visible and reads as the goal.
-6. Win check. Verify: when the marble reaches the door, play stops and the screen says “Edict Fulfilled”.
+5. Done. Door. Verify: a door is visible and reads as the goal. Prompt: `prompts/05-door.md`.
+6. Handed to the teammate, not verified. Win check. Verify: when the marble reaches the door, play stops and the screen says “Edict Fulfilled”. Prompt: `prompts/06-win.md`.
 7. Rule object. Verify: one shared shape can describe gravity, solidity, door, guard, and timing. No level-only shortcuts.
 8. Gravity values. Verify: DOWN, UP, LEFT, and RIGHT are the same gravity rule with a different direction.
 9. Sentence. Verify: the room shows GRAVITY IS [DOWN]. The bracketed word looks editable. It is not a settings menu.
@@ -126,10 +128,13 @@ Done:
 - Task 2 done: a still marble sits in the room, with no player controls
 - Task 3 done: temporary downward gravity. The marble falls straight and is not player-controlled.
 - Task 4 done: floor, ceiling, and side walls share one collider. The marble lands and stays. Fall speed is capped so it does not tunnel.
+- Task 5 done: a door marker sits on the right wall, above the floor. It does not open and it does not detect a win.
 
 Left:
 
-- Tasks 5–22. Next is the door.
+- Task 6 is with the teammate and is not verified yet. Prompt: `prompts/06-win.md`. Do not build the win check here while she is on it.
+- Tasks 7–22 wait until her win check is verified.
+- The tagline prompt in `prompts/header-tagline.md` was not the task she was given.
 
 ## Bugs and fixes
 

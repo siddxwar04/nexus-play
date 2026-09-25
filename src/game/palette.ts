@@ -6,4 +6,5 @@ export const palette = {
   line: 0x3c4352,
   wall: 0x2a3142,
   marble: 0xe4dcc8,
+  door: 0xc6a36a,
 } as const
