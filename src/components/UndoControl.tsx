@@ -1,8 +1,12 @@
 import { useEffect, useState } from 'react'
-import { hasUndo, restart, subscribeRule, undo } from '../game/liveRule'
-import { palette } from '../game/palette'
+import { hasUndo, isWon, restart, subscribeRule, undo } from '../game/liveRule'
 
-export function UndoControl() {
+type Props = {
+  hintOpen: boolean
+  onToggleHint: () => void
+}
+
+export function UndoControl({ hintOpen, onToggleHint }: Props) {
   const [ready, setReady] = useState(hasUndo())
 
   useEffect(() => {
@@ -14,8 +18,9 @@ export function UndoControl() {
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
       if (event.repeat) return
-      if (event.key !== 'r' && event.key !== 'R') return
-      restart()
+      const key = event.key.toLowerCase()
+      if (key === 'r') restart()
+      if (key === 'u' && !isWon()) undo()
     }
 
     window.addEventListener('keydown', onKey)
@@ -23,23 +28,29 @@ export function UndoControl() {
   }, [])
 
   return (
-    <div className="flex justify-center gap-8 px-6 pb-5">
+    <div className="flex flex-wrap justify-center gap-x-8 gap-y-1 px-4 pb-4 sm:gap-x-10 sm:px-6 sm:pb-5">
       <button
         type="button"
         disabled={!ready}
         onClick={() => undo()}
-        className="cursor-pointer text-xs tracking-[0.28em] disabled:cursor-default disabled:opacity-40"
-        style={{ color: palette.mute }}
+        className="quiet-control min-h-11 cursor-pointer px-3 text-xs tracking-[0.28em] disabled:cursor-default disabled:opacity-40"
       >
-        UNDO
+        ↶ UNDO
       </button>
       <button
         type="button"
         onClick={() => restart()}
-        className="cursor-pointer text-xs tracking-[0.28em]"
-        style={{ color: palette.mute }}
+        className="quiet-control min-h-11 cursor-pointer px-3 text-xs tracking-[0.28em]"
       >
-        RESTART
+        ↻ RESTART
+      </button>
+      <button
+        type="button"
+        onClick={onToggleHint}
+        aria-pressed={hintOpen}
+        className="quiet-control min-h-11 cursor-pointer px-3 text-xs tracking-[0.28em]"
+      >
+        {hintOpen ? '✕ HINT' : '? HINT'}
       </button>
     </div>
   )

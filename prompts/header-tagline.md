@@ -1,16 +1,16 @@
-# Not used — Tagline
+# Tagline
 
-This prompt was drafted and not given. The teammate was given task 6, the win check, instead.
+Already in place: the page title is EDICT, with the room number beside it. The room, sentence, and buttons already work.
 
-Do this, only if that assignment changes:
+Do this:
 
-- In `src/App.tsx`, under EDICT, add the tagline “Rewrite the law.”
-- Use the colors in `src/game/palette.ts`.
+- Under EDICT, add the tagline “Rewrite the law.”
+- Keep it small and quiet. Use the colors in `src/game/palette.ts`.
 
 Leave out:
 
 - Do not edit `src/game/RoomScene.ts`.
-- No door, physics, sentence, or buttons.
+- No new door, physics, sentence, or buttons.
 
 Check:
 
