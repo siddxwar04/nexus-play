@@ -1,4 +1,4 @@
-# 23 — Presence
+# 24 — Presence
 
 Already in place: six rooms, one sentence, a framed door, a marble the player cannot move, and quiet controls.
 

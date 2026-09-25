@@ -11,9 +11,10 @@ import {
   type RuleUpdate,
   type Snapshot,
 } from './liveRule'
+import { prefersReducedMotion } from './motion'
 import { palette } from './palette'
 import { gravityVector, type Rule } from './rule'
-import type { RoomDef, Spot } from './rooms'
+import type { Box, RoomDef, Spot } from './rooms'
 import { playCue } from './sound'
 
 const MARBLE_RADIUS = 16
@@ -27,8 +28,21 @@ const GUARD_SPEED = 150
 const GUARD_REACH = 64
 const GUARD_FOOT = 18
 const MAX_BLOCKS = 2
+const MAX_STONES = 2
+const TRAIL_LENGTH = 12
+const TRAIL_MIN_SPEED = 40
+const SPARK_COUNT = 14
+const SPARK_LIFE = 620
 
-type Inner = { left: number; right: number; top: number; bottom: number; width: number; height: number }
+type Inner = {
+  left: number
+  right: number
+  top: number
+  bottom: number
+  width: number
+  height: number
+}
+type Spark = { x: number; y: number; vx: number; vy: number; life: number }
 
 export class RoomScene extends Phaser.Scene {
   private room: RoomDef = getRoom()
@@ -39,6 +53,7 @@ export class RoomScene extends Phaser.Scene {
   private walls: Phaser.GameObjects.Rectangle[] = []
   private blocks: Phaser.GameObjects.Rectangle[] = []
   private blockCollider?: Phaser.Physics.Arcade.Collider
+  private stones: Phaser.GameObjects.Rectangle[] = []
   private door?: Phaser.GameObjects.Container
   private doorSlab?: Phaser.GameObjects.Container
   private doorGlow?: Phaser.GameObjects.Rectangle
@@ -53,6 +68,9 @@ export class RoomScene extends Phaser.Scene {
   private keyTaken = false
   private elapsed = 0
   private guardHome = 0
+  private trail: Array<{ x: number; y: number }> = []
+  private sparks: Spark[] = []
+  private calm = prefersReducedMotion()
 
   constructor() {
     super('room')
@@ -70,6 +88,10 @@ export class RoomScene extends Phaser.Scene {
     const marble = this.addMarble()
     this.physics.add.collider(marble, this.walls)
     this.addBlocks(marble)
+    this.addStones(marble)
+    // Touch checks live in the physics step, not the render frame, so a fast marble cannot skip a small key.
+    if (this.key) this.physics.add.overlap(marble, this.key, () => this.touchKey())
+    if (this.goal) this.physics.add.overlap(marble, this.goal, () => this.touchGoal())
     this.enterRoom()
 
     const stopRule = subscribeRule((update) => {
@@ -87,6 +109,8 @@ export class RoomScene extends Phaser.Scene {
   }
 
   update(_time: number, delta: number) {
+    this.stepTrail()
+    this.stepSparks(delta)
     this.paintActors()
     this.keepMarbleInRoom()
     if (isWon()) {
@@ -95,10 +119,8 @@ export class RoomScene extends Phaser.Scene {
     }
 
     if (this.room.clock) this.elapsed += delta
-    this.collectKey()
     this.moveGuard(delta)
     this.setDoorOpen(this.doorShouldOpen())
-    this.checkWin()
   }
 
   // Room flow
@@ -108,6 +130,8 @@ export class RoomScene extends Phaser.Scene {
     this.lastRule = getRule()
     this.elapsed = 0
     this.keyTaken = false
+    this.trail.length = 0
+    this.sparks.length = 0
     this.layoutAll()
     this.lastInner = this.inner()
     this.placeMarble()
@@ -129,6 +153,7 @@ export class RoomScene extends Phaser.Scene {
     }
 
     if (update.restore) {
+      this.trail.length = 0
       this.restore(update.restore)
     } else if (!update.won) {
       if (update.rule.timing !== this.lastRule.timing) this.elapsed = 0
@@ -173,12 +198,10 @@ export class RoomScene extends Phaser.Scene {
     return true
   }
 
-  private collectKey() {
-    if (!this.room.key || this.keyTaken || !this.key || !this.marble) return
-    if (this.physics.overlap(this.marble, this.key)) {
-      this.keyTaken = true
-      playCue('key')
-    }
+  private touchKey() {
+    if (!this.room.key || this.keyTaken || isWon()) return
+    this.keyTaken = true
+    playCue('key')
   }
 
   private guardBlocksDoor() {
@@ -202,9 +225,54 @@ export class RoomScene extends Phaser.Scene {
     this.guard.setX(this.guard.x + Math.sign(dx) * step)
   }
 
-  private checkWin() {
-    if (!this.doorOpen || !this.marble || !this.goal || this.guardBlocksDoor()) return
-    if (this.physics.overlap(this.marble, this.goal)) fulfill()
+  private touchGoal() {
+    if (isWon() || !this.marble || this.guardBlocksDoor()) return
+    // The door state is refreshed here too, so a marble arriving in the same step the condition is met still counts.
+    this.setDoorOpen(this.doorShouldOpen())
+    if (!this.doorOpen) return
+    fulfill()
+    this.burst(this.marble.x, this.marble.y)
+  }
+
+  // Motion the law does not cause: a trail behind the marble and a burst at the door
+
+  private stepTrail() {
+    if (!this.marble || !this.marbleBody) return
+    const speed = this.marbleBody.velocity.length()
+    if (this.calm || speed < TRAIL_MIN_SPEED || isWon()) {
+      if (this.trail.length > 0) this.trail.shift()
+      return
+    }
+    this.trail.push({ x: this.marble.x, y: this.marble.y })
+    if (this.trail.length > TRAIL_LENGTH) this.trail.shift()
+  }
+
+  private burst(x: number, y: number) {
+    if (this.calm) return
+    for (let index = 0; index < SPARK_COUNT; index += 1) {
+      const angle = (Math.PI * 2 * index) / SPARK_COUNT + Math.random() * 0.4
+      const speed = 90 + Math.random() * 120
+      this.sparks.push({
+        x,
+        y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: SPARK_LIFE,
+      })
+    }
+  }
+
+  private stepSparks(delta: number) {
+    if (this.sparks.length === 0) return
+    const seconds = delta / 1000
+    this.sparks.forEach((spark) => {
+      spark.x += spark.vx * seconds
+      spark.y += spark.vy * seconds
+      spark.vx *= 0.94
+      spark.vy *= 0.94
+      spark.life -= delta
+    })
+    this.sparks = this.sparks.filter((spark) => spark.life > 0)
   }
 
   private applySolidity() {
@@ -242,7 +310,14 @@ export class RoomScene extends Phaser.Scene {
     const right = this.scale.width - pad - wall
     const top = pad + wall
     const bottom = this.scale.height - pad - wall
-    return { left, right, top, bottom, width: right - left, height: bottom - top }
+    return {
+      left,
+      right,
+      top,
+      bottom,
+      width: right - left,
+      height: bottom - top,
+    }
   }
 
   private blockTop(index: number) {
@@ -256,13 +331,17 @@ export class RoomScene extends Phaser.Scene {
     let y = inner.top + spot.y * inner.height
     if (spot.onFloor) y = inner.bottom - radius - 1
     if (spot.onBlock !== undefined) y = this.blockTop(spot.onBlock) - radius - 2
-    return { x, y: Phaser.Math.Clamp(y, inner.top + radius, inner.bottom - radius) }
+    return {
+      x,
+      y: Phaser.Math.Clamp(y, inner.top + radius, inner.bottom - radius),
+    }
   }
 
   private layoutAll() {
     this.drawFrame()
     this.layoutWalls()
     this.layoutBlocks()
+    this.layoutStones()
     this.layoutDoor()
     this.layoutKey()
     this.layoutGuard()
@@ -285,8 +364,45 @@ export class RoomScene extends Phaser.Scene {
         const gx = (this.guard.x - before.left) / before.width
         this.guard.setX(after.left + gx * after.width)
       }
+      this.unstick()
     }
     this.lastInner = after
+  }
+
+  /**
+   * A proportional remap keeps the marble's place but not its radius, so a marble resting on a shelf can
+   * end a few pixels inside it after a large shrink. Arcade treats that as a pass-through. Push it back out.
+   */
+  private unstick() {
+    if (!this.marble || !this.marbleBody) return
+    const solid = getRule().solidity === 'solid'
+    const shapes = [...(solid ? this.blocks : []), ...this.stones].filter((shape) => shape.visible)
+    const r = MARBLE_RADIUS
+    let x = this.marble.x
+    let y = this.marble.y
+    let moved = false
+    shapes.forEach((shape) => {
+      const left = shape.x - shape.displayWidth / 2
+      const right = shape.x + shape.displayWidth / 2
+      const top = shape.y - shape.displayHeight / 2
+      const bottom = shape.y + shape.displayHeight / 2
+      if (x + r <= left || x - r >= right || y + r <= top || y - r >= bottom) return
+      const up = y + r - top
+      const down = bottom - (y - r)
+      const toLeft = x + r - left
+      const toRight = right - (x - r)
+      const least = Math.min(up, down, toLeft, toRight)
+      if (least === up) y = top - r - 1
+      else if (least === down) y = bottom + r + 1
+      else if (least === toLeft) x = left - r - 1
+      else x = right + r + 1
+      moved = true
+    })
+    if (!moved) return
+    const vx = this.marbleBody.velocity.x
+    const vy = this.marbleBody.velocity.y
+    this.marbleBody.reset(x, y)
+    this.marbleBody.setVelocity(vx, vy)
   }
 
   private placeMarble() {
@@ -354,20 +470,41 @@ export class RoomScene extends Phaser.Scene {
   }
 
   private layoutBlocks() {
+    this.layoutBoxes(this.blocks, this.room.blocks)
+  }
+
+  // Stone: part of the walls, never ghost
+
+  private addStones(marble: Phaser.GameObjects.Arc) {
+    for (let index = 0; index < MAX_STONES; index += 1) {
+      const stone = this.add.rectangle(0, 0, MIN_BLOCK, MIN_BLOCK, palette.wall)
+      stone.setDepth(1)
+      stone.setAlpha(0)
+      this.physics.add.existing(stone, true)
+      this.stones.push(stone)
+    }
+    this.physics.add.collider(marble, this.stones)
+  }
+
+  private layoutStones() {
+    this.layoutBoxes(this.stones, this.room.stones ?? [])
+  }
+
+  private layoutBoxes(shapes: Phaser.GameObjects.Rectangle[], defs: Box[]) {
     const inner = this.inner()
-    this.blocks.forEach((block, index) => {
-      const def = this.room.blocks[index]
+    shapes.forEach((shape, index) => {
+      const def = defs[index]
       if (!def) {
-        block.setVisible(false)
-        this.syncStatic(block, MIN_BLOCK, MIN_BLOCK, false)
+        shape.setVisible(false)
+        this.syncStatic(shape, MIN_BLOCK, MIN_BLOCK, false)
         return
       }
       const width = Math.max(MIN_BLOCK, def.w * inner.width)
       const height = Math.max(MIN_BLOCK, def.h * inner.height)
-      block.setVisible(true)
-      block.setPosition(inner.left + (def.x + def.w / 2) * inner.width, inner.top + (def.y + def.h / 2) * inner.height)
-      block.setDisplaySize(width, height)
-      this.syncStatic(block, width, height, true)
+      shape.setVisible(true)
+      shape.setPosition(inner.left + (def.x + def.w / 2) * inner.width, inner.top + (def.y + def.h / 2) * inner.height)
+      shape.setDisplaySize(width, height)
+      this.syncStatic(shape, width, height, true)
     })
   }
 
@@ -452,12 +589,18 @@ export class RoomScene extends Phaser.Scene {
     const y = this.doorOpen ? -DOOR_HEIGHT * 0.82 : 0
     const alpha = this.doorOpen ? 0.08 : 1
     this.tweens.killTweensOf(slab)
-    if (!animate) {
+    if (!animate || this.calm) {
       slab.setY(y)
       slab.setAlpha(alpha)
       return
     }
-    this.tweens.add({ targets: slab, y, alpha, duration: 240, ease: 'Quad.easeOut' })
+    this.tweens.add({
+      targets: slab,
+      y,
+      alpha,
+      duration: 240,
+      ease: 'Quad.easeOut',
+    })
   }
 
   // Key
@@ -530,27 +673,77 @@ export class RoomScene extends Phaser.Scene {
 
     back.clear()
     front.clear()
+    this.paintStones(back)
     this.paintBlocks(back)
     this.paintKey(back)
+    this.paintTrail(back)
     this.paintMarble(back, front)
     this.paintGuard(front)
     this.paintClock(front)
+    this.paintSparks(front)
     this.paintDoorGlow()
+  }
+
+  private paintStones(g: Phaser.GameObjects.Graphics) {
+    this.stones.forEach((stone) => {
+      if (!stone.visible) return
+      const width = stone.displayWidth
+      const height = stone.displayHeight
+      const left = stone.x - width / 2
+      const top = stone.y - height / 2
+      g.fillStyle(palette.wall, 1)
+      g.fillRect(left, top, width, height)
+      g.lineStyle(1, palette.lip, 0.85)
+      g.strokeRect(left + 0.5, top + 0.5, width - 1, height - 1)
+    })
   }
 
   private paintBlocks(g: Phaser.GameObjects.Graphics) {
     if (this.room.blocks.length === 0) return
-    const alpha = getRule().solidity === 'ghost' ? 0.28 : 1
+    const ghost = getRule().solidity === 'ghost'
     this.blocks.forEach((block) => {
       if (!block.visible) return
       const width = block.displayWidth
       const height = block.displayHeight
       const left = block.x - width / 2
       const top = block.y - height / 2
-      g.fillStyle(palette.block, alpha)
+      if (!ghost) {
+        g.fillStyle(palette.block, 1)
+        g.fillRect(left, top, width, height)
+        g.fillStyle(0xd7e6f8, 0.7)
+        g.fillRect(left, top, width, Math.min(3, height))
+        return
+      }
+      // A ghost block is drawn as a mesh, not only a fade, so the state reads without colour.
+      g.fillStyle(palette.block, 0.14)
       g.fillRect(left, top, width, height)
-      g.fillStyle(0xd7e6f8, alpha * 0.7)
-      g.fillRect(left, top, width, Math.min(3, height))
+      g.lineStyle(1, palette.block, 0.55)
+      g.strokeRect(left + 0.5, top + 0.5, width - 1, height - 1)
+      g.fillStyle(palette.block, 0.5)
+      for (let y = top + 4; y < top + height - 1; y += 8) {
+        const offset = Math.round((y - top) / 8) % 2 === 0 ? 0 : 6
+        for (let x = left + 3 + offset; x + 6 <= left + width - 3; x += 12) {
+          g.fillRect(x, y, 6, 1.5)
+        }
+      }
+    })
+  }
+
+  private paintTrail(g: Phaser.GameObjects.Graphics) {
+    const count = this.trail.length
+    if (count === 0) return
+    this.trail.forEach((point, index) => {
+      const t = (index + 1) / count
+      g.fillStyle(palette.marble, 0.22 * t)
+      g.fillCircle(point.x, point.y, MARBLE_RADIUS * (0.3 + 0.55 * t))
+    })
+  }
+
+  private paintSparks(g: Phaser.GameObjects.Graphics) {
+    this.sparks.forEach((spark) => {
+      const t = spark.life / SPARK_LIFE
+      g.fillStyle(palette.key, t)
+      g.fillCircle(spark.x, spark.y, 1.5 + 2.5 * t)
     })
   }
 
@@ -609,7 +802,7 @@ export class RoomScene extends Phaser.Scene {
 
   private paintDoorGlow() {
     if (!this.doorGlow) return
-    const pulse = 0.14 + Math.sin(this.time.now / 380) * 0.05
+    const pulse = this.calm ? 0.14 : 0.14 + Math.sin(this.time.now / 380) * 0.05
     this.doorGlow.setAlpha(this.doorOpen ? 0.62 : pulse)
   }
 

@@ -7,7 +7,12 @@ export type Wall = 'left' | 'right' | 'floor' | 'ceiling'
 export type Box = { x: number; y: number; w: number; h: number }
 
 /** A point inside the room. Fractions of the inner room, or resting on the floor or on a block. */
-export type Spot = { x: number; y: number; onFloor?: boolean; onBlock?: number }
+export type Spot = {
+  x: number
+  y: number
+  onFloor?: boolean
+  onBlock?: number
+}
 
 export type RoomDef = {
   id: number
@@ -19,6 +24,8 @@ export type RoomDef = {
   spawn: Spot
   door: { wall: Wall; at: number }
   blocks: Box[]
+  /** Stone is part of the walls. No word in the law can change it. */
+  stones?: Box[]
   key?: Spot
   guard?: boolean
   clock?: boolean
@@ -113,6 +120,72 @@ export const rooms: RoomDef[] = [
     door: { wall: 'left', at: 0.44 },
     blocks: [{ x: 0.6, y: 0.48, w: 0.4, h: 0.04 }],
     key: { x: 0.8, y: 0.48, onBlock: 0 },
+  },
+  {
+    id: 7,
+    title: 'The Stair',
+    clauses: [{ lead: 'GRAVITY IS', slot: 'gravity' }],
+    initial: { gravity: 'down' },
+    par: 4,
+    hint: 'Stone does not listen to the law. Go under the first pillar, up the second, and over.',
+    spawn: { x: 0.15, y: 0.1 },
+    door: { wall: 'right', at: 1 },
+    blocks: [],
+    stones: [
+      { x: 0.33, y: 0, w: 0.04, h: 0.68 },
+      { x: 0.66, y: 0.32, w: 0.04, h: 0.68 },
+    ],
+  },
+  {
+    id: 8,
+    title: 'The Key Beneath',
+    clauses: [
+      { lead: 'BLUE BLOCKS ARE', slot: 'solidity' },
+      { lead: 'THE DOOR OPENS WHEN THE MARBLE TOUCHES THE', slot: 'door' },
+      { lead: 'GRAVITY IS', slot: 'gravity' },
+    ],
+    initial: { solidity: 'solid', door: 'key', gravity: 'down' },
+    par: 2,
+    hint: 'The key hangs in the air below the shelf. Fall through it first. Rise second.',
+    spawn: { x: 0.5, y: 0.1, onBlock: 0 },
+    door: { wall: 'ceiling', at: 0.5 },
+    blocks: [{ x: 0.2, y: 0.3, w: 0.6, h: 0.04 }],
+    key: { x: 0.5, y: 0.72 },
+  },
+  {
+    id: 9,
+    title: 'The Slow Guard',
+    clauses: [
+      { lead: 'THE GUARD FOLLOWS THE', slot: 'guard' },
+      { lead: 'THE DOOR CLOSES AFTER', slot: 'timing', tail: 'SECONDS' },
+      { lead: 'GRAVITY IS', slot: 'gravity' },
+    ],
+    initial: { guard: 'door', timing: 3, gravity: 'down' },
+    par: 3,
+    hint: 'The guard is slow and the clock is fast. Send the guard away first. Rewind the clock last.',
+    spawn: { x: 0.15, y: 0.1 },
+    door: { wall: 'right', at: 1 },
+    blocks: [],
+    guard: true,
+    clock: true,
+  },
+  {
+    id: 10,
+    title: 'The Last Edict',
+    clauses: [
+      { lead: 'GRAVITY IS', slot: 'gravity' },
+      { lead: 'BLUE BLOCKS ARE', slot: 'solidity' },
+      { lead: 'THE DOOR OPENS WHEN THE MARBLE TOUCHES THE', slot: 'door' },
+      { lead: 'THE GUARD FOLLOWS THE', slot: 'guard' },
+    ],
+    initial: { gravity: 'down', solidity: 'solid', door: 'key', guard: 'door' },
+    par: 4,
+    hint: 'The guard only needs a reason to step aside. Then there are two laws that open this door.',
+    spawn: { x: 0.85, y: 0.1, onBlock: 0 },
+    door: { wall: 'right', at: 1 },
+    blocks: [{ x: 0.55, y: 0.45, w: 0.45, h: 0.04 }],
+    key: { x: 0.65, y: 0.45, onBlock: 0 },
+    guard: true,
   },
 ]
 

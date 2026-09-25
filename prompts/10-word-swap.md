@@ -1,6 +1,6 @@
 # 10 — Word swap
 
-Already in place: the page shows GRAVITY IS [DOWN]. The bracketed word looks editable, but it does not change yet. The win check is a separate task in `src/game/RoomScene.ts`.
+Already in place: the page shows GRAVITY IS [DOWN]. The bracketed word looks editable, but it does not change yet. The player does not move the marble.
 
 Do this:
 

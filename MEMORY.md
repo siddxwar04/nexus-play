@@ -21,14 +21,15 @@ The long Edict brief in chat is the design reference. This file is what we follo
 - Principle: do not control the world. Change the rules of the world.
 - The law is one short paragraph of one to three clauses. Editable words sit inside it, like GRAVITY IS [DOWN].
 - A word swap applies immediately. Same system for every value. GRAVITY IS DOWN and GRAVITY IS RIGHT share one gravity rule.
-- Six rooms. Each room has one law, one trick, and one clear idea. The obvious swap is usually the trap.
-- Win: the marble reaches the open door. Show “Edict Fulfilled”, the number of rule changes, the par, a verdict, the best count here, then the next room. After room six: total and PLAY AGAIN.
+- Ten rooms. Each room has one law, one trick, and one clear idea. The obvious swap is usually the trap.
+- Win: the marble reaches the open door. Show “Edict Fulfilled”, the number of rewrites, the par, a verdict, the best count here, then the next room. After room ten: total, THE EDICT (every law written out), COPY RESULT, and PLAY AGAIN.
+- Under the law, a quiet line counts rewrites against the par. Progress marks turn gold once a room’s best is within the law.
 - A bad swap is not a game over. Undo or restart, then try again.
 - No live AI inside the game. Every swap comes from a fixed word list.
 
 ## Rooms
 
-Rooms are data in `src/game/rooms.ts`: title, clauses, starting words, par, hint, spawn, door wall, blue blocks, key, guard, clock. The scene lays out from that data.
+Rooms are data in `src/game/rooms.ts`: title, clauses, starting words, par, hint, spawn, door wall, blue blocks, stone, key, guard, clock. The scene lays out from that data. Stone is drawn and collides like the walls; no word changes it.
 
 - Room 1, The First Law. GRAVITY IS [DOWN]. Door on the floor to the right. Par 1.
 - Room 2, Two Clauses. GRAVITY IS [DOWN]. BLUE BLOCKS ARE [SOLID]. Marble on a blue shelf, blue wall in the way, door on the right wall. RIGHT then GHOST. Par 2.
@@ -36,6 +37,10 @@ Rooms are data in `src/game/rooms.ts`: title, clauses, starting words, par, hint
 - Room 4, The Guard. THE GUARD FOLLOWS THE [DOOR]. GRAVITY IS [DOWN]. Guard stands on the door. MARBLE pulls it away, then RIGHT. RIGHT first is a dead end. Par 2.
 - Room 5, The Clock. THE DOOR CLOSES AFTER [THREE] SECONDS. GRAVITY IS [DOWN]. Door starts open and shuts on a timer. Rewriting the timing word restarts the clock. Par 3.
 - Room 6, The Edict. GRAVITY IS [UP]. BLUE BLOCKS ARE [SOLID]. THE DOOR OPENS WHEN THE MARBLE TOUCHES THE [KEY]. Ceiling right, drop to the shelf, LEFT over the key to the door on the left wall. Par 3.
+- Room 7, The Stair. GRAVITY IS [DOWN] only. Two stone pillars. RIGHT under the first, UP the second, RIGHT over, DOWN into the door. Par 4.
+- Room 8, The Key Beneath. Marble on a blue shelf, key in the air below it, door in the ceiling above. GHOST then UP. UP first meets a shut door; FLOOR shuts the door as the marble leaves the shelf. Par 2.
+- Room 9, The Slow Guard. Guard on the door, clock running from the start. MARBLE, RIGHT, then rewind the clock. RIGHT first is a dead end. Par 3.
+- Room 10, The Last Edict. Gravity, solidity, key, guard. Marble on a shelf above the door, guard posted beside the door. MARBLE alone steps the guard aside. Then LEFT over the key, DOWN, RIGHT; or FLOOR, GHOST, RIGHT. Par 4.
 - Word lists: gravity DOWN/UP/LEFT/RIGHT, solidity SOLID/GHOST, door KEY/FLOOR, guard DOOR/MARBLE, timing ONE/TWO/THREE.
 - Add a rule type only when a room needs it.
 
@@ -49,13 +54,22 @@ Rooms are data in `src/game/rooms.ts`: title, clauses, starting words, par, hint
 - 2026-09-25: Write each saved prompt as a plain build instruction: what to do, what to leave out, and how to check it. Reason: the prompting score comes from specific prompts. Do not add fake typos to look human.
 - 2026-09-25: Every used prompt in `prompts/` uses the same four parts: already in place, do this, leave out, check. Reason: the PDF should read as one clear build sequence.
 - 2026-09-25: The tagline “Rewrite the law.” sits under EDICT on the page. Reason: that was the teammate’s task, and it had not been added.
-- 2026-09-25: The page follows the brief’s layout: centered title, the sentence as the main visual, the room filling the rest, and two quiet controls. Reason: the user asked for the UI quality described in the master instructions. Prompt: `prompts/ui-polish.md`.
+- 2026-09-25: The page follows the brief’s layout: centered title, the sentence as the main visual, the room filling the rest, and two quiet controls. Reason: the user asked for the UI quality described in the master instructions. Prompt: `prompts/23-ui-polish.md`.
 - 2026-09-25: The door is a framed doorway with two panels and a handle. The frame stays, and the slab slides up when it opens. Reason: a thin rectangle did not read as a door.
-- 2026-09-25: The room, marble, key, guard, and blocks are drawn so each one is readable, and the layout stays large under 768px. Reason: the user asked for the whole game to look alive and responsive. Prompt: `prompts/23-presence.md`.
+- 2026-09-25: The room, marble, key, guard, and blocks are drawn so each one is readable, and the layout stays large under 768px. Reason: the user asked for the whole game to look alive and responsive. Prompt: `prompts/24-presence.md`.
 - 2026-09-25: A destroyed room no longer blocks later word changes. Room 1’s door stands on the floor, so RIGHT reaches it. Room 4 starts with the guard on the door until the word becomes TOWARD or AWAY. Reason: a playthrough found the sentence changing while the marble did not, and rooms 1 and 4 could not be cleared.
-- 2026-09-25: The six rooms were redesigned as data with multi-clause laws, a par per room, traps in the obvious swap, a best count kept in the browser, an intro screen, and a hint control. Reason: one-word rooms were solved by guessing in seconds, so there was no “aha” and no reason to replay. A law may now have more than one clause; each room still has one trick. Prompt: `prompts/24-deeper-rooms.md`.
+- 2026-09-25: The six rooms were redesigned as data with multi-clause laws, a par per room, traps in the obvious swap, a best count kept in the browser, an intro screen, and a hint control. Reason: one-word rooms were solved by guessing in seconds, so there was no “aha” and no reason to replay. A law may now have more than one clause; each room still has one trick. Prompt: `prompts/25-deeper-rooms.md`.
+- 2026-09-25: Prompt files are numbered 01 to 25 in the order they were run, with `prompts/00-index.md` as the PDF’s opening page for the prompt section. Prompt 06 is a proper four-part prompt with a one-line note that it was built inside 18. Prompts 07 to 10 no longer mention a “separate win task”. Reason: judges read the prompts, so the sequence must read in order without meta notes or broken lines.
 - 2026-09-25: The guard words are DOOR and MARBLE. Reason: “THE GUARD FOLLOWS THE [DOOR]” reads as a sentence, and the old TOWARD/AWAY/DOOR set made an ungrammatical line.
 - 2026-09-25: Phaser loads after the first paint, and the marble keeps its relative place when the canvas resizes. Reason: faster first view, and a two-line law used to resize the canvas and drop the marble off its shelf.
+- 2026-09-25: Four more rooms (7 to 10) and stone that ignores the law. Reason: six rooms was about ten minutes of play and the user asked for something people would keep playing. Each new room asks for a kind of thinking the first six did not: a pure gravity maze, a key in the air, guard plus clock, and a finale with two valid laws. No new rule type was added. Prompt: `prompts/26-four-more-rooms.md`.
+- 2026-09-25: A live rewrite count sits under the law, and the win rule and progress marks turn gold when a room is within the law. Reason: the player needs a target before the door, not only after. Prompt: `prompts/27-rewrite-count.md`.
+- 2026-09-25: The replacement-word row and the count share one box of fixed height. Reason: opening a word used to change the header height, the room resized under a moving marble, and Phaser follows its parent on a half-second poll, so the marble landed in the wrong place. The room must not resize during play.
+- 2026-09-25: Key and door touches run as Arcade overlap colliders in the physics step, not per render frame. Reason: at full speed a 16px key can sit between two frames, and a playthrough missed it.
+- 2026-09-25: After a resize remap, the marble is pushed out of any solid it overlaps. Reason: a large shrink (room 9 to room 10’s five-line law) left the resting marble about 4px inside its shelf, which Arcade treats as a pass-through, and it fell to the floor.
+- 2026-09-25: Marble trail, door sparks, ghost mesh, stone edge. Reason: motion only where it explains something. The mesh makes SOLID and GHOST readable without colour. Prompt: `prompts/28-trail-burst-mesh.md`.
+- 2026-09-25: The ending keeps every cleared law and shows THE EDICT, plus COPY RESULT with a ●/○ line. Reason: a memorable closer and a way to share without any backend. Prompt: `prompts/29-the-edict-scroll.md`.
+- 2026-09-25: Reduced motion is respected, M mutes and is remembered, keys are shown on the first screen. Reason: finish quality that judges check. Prompt: `prompts/30-steadiness.md`.
 - 2026-09-25: Prompts 17, 19, and 20 were rewritten to name the sentence, the limits, and the check. Prompt 06 points at the win behavior in prompt 18. Reason: the first drafts were too thin, and 06 still described a temporary marble start that was not shipped.
 - 2026-09-25: Deploy on Vercel after the game is playable. Reason: the submission needs a live link, and this is a static Vite app with no server. Vercel builds it with `npm run build` and serves the `dist` folder.
 - 2026-09-25: Split sentence, state, a pure rule reader, and the Phaser room. Reason: the sentence stays the law, and the room only follows the parsed rule.
@@ -94,9 +108,9 @@ Rooms are data in `src/game/rooms.ts`: title, clauses, starting words, par, hint
 - Word choices are a short list on that sentence. No free typing.
 - Undo restores the previous sentence, rule, and the marble when that matters.
 - Restart (R) restores the room’s original state.
-- Six rooms, then a clear ending.
-- Visuals stay geometric and quiet: circle marble, rectangles, one door, few colors. The sentence is the main visual.
-- Sound stays quiet and comes after the six rooms work.
+- Ten rooms, then a clear ending.
+- Visuals stay geometric and quiet: circle marble, rectangles, one door, few colors. The sentence is the main visual. Motion only where it explains something: the trail, the door sparks, the sliding slab.
+- Sound stays quiet. M mutes.
 - Do not add a live model, accounts, level editor, shop, story, leaderboard, or a separate mobile app.
 - Do not switch to another game concept unless this file is updated first.
 - Work on one task at a time. Smallest change that keeps the rule-editing mechanic.
@@ -154,10 +168,11 @@ Done:
 - Task 15 done: room 3 uses THE DOOR OPENS WHEN THE MARBLE TOUCHES THE [KEY]. FLOOR opens the door when the marble lands. The key sits off to the side.
 - Task 16 done: room 4 is THE GUARD MOVES [TOWARD] THE MARBLE. AWAY and DOOR change where the guard goes.
 - Tasks 17–20 done: timing room, six rooms in order, responsive stack, and quiet cues for swap, rule, door, and win. The page starts at room 1. Deployment was left alone.
-- Task 22 done: `submission/concept.md` is the PDF page-1 write-up. The prompts in `prompts/01` through `prompts/21` are the later pages.
-- Tagline done: “Rewrite the law.” is under EDICT in `src/App.tsx`. Prompt: `prompts/header-tagline.md`.
-- UI polish done: centered title, serif sentence, hover on the editable word, clearer room edge, and a quiet win panel. Prompt: `prompts/ui-polish.md`.
-- Deeper rooms done: six data-driven rooms with par, traps, best counts, intro screen, hint, key and clock cues. All six were played to par in Chrome, wide and at 390px. Prompt: `prompts/24-deeper-rooms.md`.
+- Task 22 done: `submission/concept.md` is the PDF page-1 write-up. The later pages are `prompts/00-index.md` followed by `prompts/01` through `prompts/30` in order.
+- Tagline done: “Rewrite the law.” is under EDICT in `src/App.tsx`. Prompt: `prompts/22-tagline.md`.
+- UI polish done: centered title, serif sentence, hover on the editable word, clearer room edge, and a quiet win panel. Prompt: `prompts/23-ui-polish.md`.
+- Deeper rooms done: six data-driven rooms with par, traps, best counts, intro screen, hint, key and clock cues. All six were played to par in Chrome, wide and at 390px. Prompt: `prompts/25-deeper-rooms.md`.
+- Rooms 7 to 10, rewrite count, gold marks, trail, sparks, ghost mesh, THE EDICT scroll, COPY RESULT, reduced motion, mute. All ten rooms played to par in headless Chrome at 1100px, plus the ending, copy, play again, mute, and the 390px layout: 22 of 22 checks. Prompts: `prompts/26` to `prompts/30`.
 
 Left:
 
@@ -165,4 +180,6 @@ Left:
 
 ## Bugs and fixes
 
-- None yet.
+- The room resized when a word was opened, and a marble in flight landed low. Fixed by giving the word row a fixed height.
+- A fast marble crossed the key without taking it. Fixed by moving touch checks into the physics step.
+- Entering room 10 dropped the marble through its shelf. Fixed by pushing the marble out of any solid after a resize remap.

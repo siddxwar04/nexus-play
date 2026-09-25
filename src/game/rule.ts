@@ -74,6 +74,13 @@ export function wordsFor(slot: Slot, rule: Rule): Word[] {
   }
 }
 
+/** The word after a slot, bent to the number when the law counts seconds. */
+export function tailFor(clause: { slot: Slot; tail?: string }, rule: Rule) {
+  if (!clause.tail) return ''
+  if (clause.slot === 'timing' && rule.timing === 1) return ' SECOND'
+  return ` ${clause.tail}`
+}
+
 const GRAVITY_SPEED = 980
 
 export function gravityVector(direction: Direction): { x: number; y: number } {

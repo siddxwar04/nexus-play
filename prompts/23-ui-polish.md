@@ -1,4 +1,4 @@
-# UI polish
+# 23 — UI polish
 
 Already in place: EDICT, the tagline, one sentence, the room, UNDO, and RESTART. The sentence is the law.
 

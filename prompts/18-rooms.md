@@ -4,13 +4,14 @@ Already in place: gravity, solidity, door conditions, the guard, and timing each
 
 Do this:
 
-- Play six rooms in order, one sentence and one trick each.
+- Play six rooms in order, one sentence and one trick each. Show “ROOM n OF 6” beside the title.
 - Room 1: GRAVITY IS [DOWN]. Set it to RIGHT so the marble reaches the door.
 - Room 2: BLUE BLOCKS ARE [SOLID]. Gravity pulls right. GHOST lets the marble through the block.
 - Room 3: THE DOOR OPENS WHEN THE MARBLE TOUCHES THE [KEY]. FLOOR opens it when the marble lands.
-- Room 4: THE GUARD MOVES [DOOR] THE MARBLE. The guard starts on the door. TOWARD or AWAY leaves the door clear. DOOR keeps it blocked.
+- Room 4: the guard sentence from task 16, starting on DOOR so the guard stands in the doorway. TOWARD or AWAY moves it off. DOOR keeps the door blocked.
 - Room 5: THE DOOR OPENS AFTER [THREE] SECONDS.
 - Room 6: BLUE BLOCKS ARE [SOLID] again, but gravity pulls up. GHOST lets the marble reach the door above.
+- Restart returns the current room to its starting words. Undo history is per room.
 - When the marble reaches the open door, stop play, show “Edict Fulfilled”, show how many rule changes were used, and offer CONTINUE until the last room.
 
 Leave out:

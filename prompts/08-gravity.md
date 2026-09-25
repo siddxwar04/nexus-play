@@ -1,6 +1,6 @@
 # 08 — Gravity values
 
-Already in place: `createRule()` in `src/game/rule.ts`. The room still falls down. The win check is still a separate task in `src/game/RoomScene.ts`.
+Already in place: `createRule()` in `src/game/rule.ts`. The marble still falls down. The player does not move it.
 
 Do this:
 

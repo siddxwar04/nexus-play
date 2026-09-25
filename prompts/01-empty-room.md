@@ -1,6 +1,6 @@
 # 01 — Empty room
 
-Edict is a puzzle game. Later, the player will change a word in a sentence and a marble will react. Do not build that yet.
+Edict is a puzzle game. The player never moves the marble. Later, the player will change one word in a sentence, and the room will obey. Do not build that yet.
 
 Already in place: a React + Vite app.
 

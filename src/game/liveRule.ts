@@ -1,6 +1,9 @@
-import { roomAt, rooms } from './rooms'
+import { roomAt, rooms, type RoomDef } from './rooms'
 import { playCue } from './sound'
 import { createRule, type Rule } from './rule'
+
+/** A room that has been cleared in this run, with the law as it stood when the door was reached. */
+export type FulfilledLaw = { room: RoomDef; rule: Rule; count: number }
 
 export type Snapshot = {
   x: number
@@ -31,6 +34,7 @@ let totalChanges = 0
 let origin: Snapshot | null = null
 let capture: () => Snapshot | null = () => null
 const history: Array<{ rule: Rule; snapshot: Snapshot | null }> = []
+const laws: FulfilledLaw[] = []
 const listeners = new Set<Listener>()
 
 export function setMarbleCapture(fn: () => Snapshot | null) {
@@ -79,6 +83,22 @@ export function hasNextRoom() {
 
 export function hasUndo() {
   return history.length > 0
+}
+
+export function getLaws(): readonly FulfilledLaw[] {
+  return laws
+}
+
+/** One line per run, safe to paste anywhere: the score, then a mark per room. ● at or under par, ○ over. */
+export function shareText() {
+  const marks = rooms
+    .map((room) => {
+      const law = laws.find((entry) => entry.room.id === room.id)
+      if (!law) return '·'
+      return law.count <= room.par ? '●' : '○'
+    })
+    .join('')
+  return `EDICT · ${laws.length}/${rooms.length} rooms · ${totalChanges} rewrites\n${marks}`
 }
 
 function loadBest(): Record<string, number> {
@@ -135,6 +155,11 @@ export function fulfill() {
   clearCount = history.length
   totalChanges += clearCount
   saveBest(getRoom().id, clearCount)
+  const room = getRoom()
+  const index = laws.findIndex((entry) => entry.room.id === room.id)
+  const law = { room, rule, count: clearCount }
+  if (index >= 0) laws[index] = law
+  else laws.push(law)
   playCue('win')
   emit(null)
 }
@@ -148,6 +173,7 @@ export function nextRoom() {
 export function resetGame() {
   roomIndex = 0
   totalChanges = 0
+  laws.length = 0
   startRoom()
 }
 

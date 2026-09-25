@@ -1,6 +1,6 @@
 # 09 — Sentence
 
-Already in place: the room, the marble, the door, and `gravityVector()` for down, up, left, and right. The win check is a separate task in `src/game/RoomScene.ts`.
+Already in place: the room, the marble, the door, and `gravityVector()` for down, up, left, and right. The player does not move the marble.
 
 Do this:
 
