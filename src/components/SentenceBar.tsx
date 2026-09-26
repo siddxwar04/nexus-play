@@ -1,8 +1,16 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
-import { getChangeCount, getRoom, getRule, rewrite, subscribeRule } from '../game/liveRule'
+import {
+  getChangeCount,
+  getRoom,
+  getRule,
+  identifyGravity,
+  isGravityDiscovered,
+  rewrite,
+  subscribeRule,
+} from '../game/liveRule'
 import { palette } from '../game/palette'
-import { tailFor, wordsFor, type Slot } from '../game/rule'
+import { directions, tailFor, wordsFor, type Direction, type Slot } from '../game/rule'
 import { playCue } from '../game/sound'
 
 export function SentenceBar() {
@@ -10,18 +18,32 @@ export function SentenceBar() {
   const [room, setRoom] = useState(getRoom())
   const [count, setCount] = useState(getChangeCount())
   const [openSlot, setOpenSlot] = useState<Slot | null>(null)
+  const [gravityDiscovered, setGravityDiscovered] = useState(isGravityDiscovered())
+  const [discoveryMessage, setDiscoveryMessage] = useState('')
 
   useEffect(() => {
     return subscribeRule((update) => {
       setRule(update.rule)
       setRoom(getRoom())
       setCount(getChangeCount())
+      setGravityDiscovered(isGravityDiscovered())
       if (update.restore || update.resetRoom || update.won) setOpenSlot(null)
+      if (update.resetRoom) setDiscoveryMessage('')
     })
   }, [])
 
   const choices = openSlot ? wordsFor(openSlot, rule).filter((word) => !word.active) : []
   const over = count > room.par
+  const awaitingDiscovery = room.unwrittenLaw && !gravityDiscovered
+
+  function chooseDirection(direction: Direction) {
+    if (identifyGravity(direction)) {
+      setGravityDiscovered(true)
+      setDiscoveryMessage(`LAW DISCOVERED: ${direction.toUpperCase()}`)
+    } else {
+      setDiscoveryMessage('NOT THAT DIRECTION')
+    }
+  }
 
   return (
     <div className="mx-auto max-w-3xl text-center">
@@ -30,7 +52,9 @@ export function SentenceBar() {
         style={{ color: palette.ink }}
       >
         {room.clauses.map((clause) => {
-          const current = wordsFor(clause.slot, rule).find((word) => word.active)?.label ?? ''
+          const current = awaitingDiscovery && clause.slot === 'gravity'
+            ? '?'
+            : wordsFor(clause.slot, rule).find((word) => word.active)?.label ?? ''
           const isOpen = openSlot === clause.slot
           return (
             <p key={clause.slot}>
@@ -39,8 +63,11 @@ export function SentenceBar() {
                 type="button"
                 className={`law-word cursor-pointer px-1.5 ${isOpen ? 'law-word-open' : ''}`}
                 aria-expanded={isOpen}
-                aria-label={`${clause.lead} ${current}. Change this word.`}
-                onClick={() => setOpenSlot(isOpen ? null : clause.slot)}
+                aria-label={awaitingDiscovery ? `${clause.lead} unknown` : `${clause.lead} ${current}. Change this word.`}
+                disabled={awaitingDiscovery}
+                onClick={() => {
+                  if (!awaitingDiscovery) setOpenSlot(isOpen ? null : clause.slot)
+                }}
               >
                 <AnimatePresence mode="wait">
                   <motion.span
@@ -60,10 +87,40 @@ export function SentenceBar() {
           )
         })}
       </div>
-      {/* This row keeps one height whether a word is open or not, so the room below never resizes mid-flight. */}
+      {/* Discovery choices take their own height; the existing word picker stays in its fixed row. */}
       <div className="relative mt-2 min-h-12 sm:mt-3">
         <AnimatePresence mode="wait">
-          {openSlot ? (
+          {awaitingDiscovery ? (
+            <motion.div
+              key="identify-gravity"
+              className="law relative flex flex-wrap items-center justify-center gap-x-5 gap-y-1 text-base sm:gap-x-6 sm:text-lg"
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.16 }}
+            >
+              <span className="w-full text-[10px] tracking-[0.22em]" style={{ color: palette.mute }}>
+                NAME THE DIRECTION
+              </span>
+              {directions.map((direction) => (
+                <button
+                  key={direction}
+                  type="button"
+                  className="law-word min-h-11 cursor-pointer px-2"
+                  onClick={() => chooseDirection(direction)}
+                >
+                  {direction.toUpperCase()}
+                </button>
+              ))}
+              <span
+                className="w-full min-h-4 text-[10px] tracking-[0.18em]"
+                style={{ color: palette.doorInk }}
+                aria-live="polite"
+              >
+                {discoveryMessage}
+              </span>
+            </motion.div>
+          ) : openSlot ? (
             <motion.div
               key={openSlot}
               className="law absolute inset-x-0 top-0 flex flex-wrap justify-center gap-x-5 gap-y-1 text-base sm:gap-x-6 sm:text-lg"
@@ -103,6 +160,11 @@ export function SentenceBar() {
           )}
         </AnimatePresence>
       </div>
+      {!awaitingDiscovery && discoveryMessage ? (
+        <p className="mt-1 text-[10px] tracking-[0.18em]" style={{ color: palette.word }} aria-live="polite">
+          {discoveryMessage}
+        </p>
+      ) : null}
     </div>
   )
 }

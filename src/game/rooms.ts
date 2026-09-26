@@ -29,19 +29,21 @@ export type RoomDef = {
   key?: Spot
   guard?: boolean
   clock?: boolean
+  unwrittenLaw?: boolean
 }
 
 export const rooms: RoomDef[] = [
   {
     id: 1,
-    title: 'The First Law',
+    title: 'The Unwritten Law',
     clauses: [{ lead: 'GRAVITY IS', slot: 'gravity' }],
     initial: { gravity: 'down' },
     par: 1,
-    hint: 'The door stands on the floor to the right. Which way should the world pull?',
+    hint: 'The marble is already moving. Watch it before you name the law.',
     spawn: { x: 0.5, y: 0.1 },
     door: { wall: 'right', at: 1 },
     blocks: [],
+    unwrittenLaw: true,
   },
   {
     id: 2,

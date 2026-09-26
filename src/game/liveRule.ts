@@ -1,6 +1,6 @@
 import { roomAt, rooms, type RoomDef } from './rooms'
 import { playCue } from './sound'
-import { createRule, type Rule } from './rule'
+import { createRule, type Direction, type Rule } from './rule'
 
 /** A room that has been cleared in this run, with the law as it stood when the door was reached. */
 export type FulfilledLaw = { room: RoomDef; rule: Rule; count: number }
@@ -28,6 +28,7 @@ const BEST_KEY = 'edict-best'
 
 let roomIndex = 0
 let rule = createRule(roomAt(0).initial)
+let gravityDiscovered = !roomAt(0).unwrittenLaw
 let won = false
 let clearCount = 0
 let totalChanges = 0
@@ -59,6 +60,18 @@ export function getRoomNumber() {
 
 export function getRule() {
   return rule
+}
+
+export function isGravityDiscovered() {
+  return gravityDiscovered
+}
+
+export function identifyGravity(direction: Direction) {
+  if (gravityDiscovered || !getRoom().unwrittenLaw) return true
+  if (direction !== rule.gravity) return false
+  gravityDiscovered = true
+  playCue('rule')
+  return true
 }
 
 export function isWon() {
@@ -127,6 +140,7 @@ function saveBest(roomId: number, count: number) {
 
 export function rewrite(patch: Partial<Rule>) {
   if (won) return
+  if (getRoom().unwrittenLaw && !gravityDiscovered && patch.gravity !== undefined) return
   history.push({ rule, snapshot: capture() })
   rule = { ...rule, ...patch }
   playCue('rule')
@@ -146,6 +160,7 @@ export function restart() {
   history.length = 0
   won = false
   rule = createRule(getRoom().initial)
+  gravityDiscovered = !getRoom().unwrittenLaw
   emit(origin, true)
 }
 
@@ -182,6 +197,7 @@ function startRoom() {
   clearCount = 0
   history.length = 0
   rule = createRule(getRoom().initial)
+  gravityDiscovered = !getRoom().unwrittenLaw
   emit(null, true)
 }
 
