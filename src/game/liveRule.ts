@@ -27,6 +27,7 @@ type Listener = (update: RuleUpdate) => void
 const BEST_KEY = 'edict-best'
 
 let roomIndex = 0
+let replayingRoom = false
 let rule = createRule(roomAt(0).initial)
 let gravityDiscovered = !roomAt(0).unwrittenLaw
 let won = false
@@ -91,7 +92,7 @@ export function getChangeCount() {
 }
 
 export function hasNextRoom() {
-  return roomIndex < rooms.length - 1
+  return !replayingRoom && roomIndex < rooms.length - 1
 }
 
 export function hasUndo() {
@@ -185,8 +186,18 @@ export function nextRoom() {
   startRoom()
 }
 
+export function replayRoom(roomId: number) {
+  const index = rooms.findIndex((room) => room.id === roomId)
+  if (index < 0) return false
+  roomIndex = index
+  replayingRoom = true
+  startRoom()
+  return true
+}
+
 export function resetGame() {
   roomIndex = 0
+  replayingRoom = false
   totalChanges = 0
   laws.length = 0
   startRoom()
