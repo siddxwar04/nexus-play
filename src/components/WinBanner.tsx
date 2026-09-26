@@ -12,12 +12,11 @@ import {
   resetGame,
   shareText,
   subscribeRule,
-  type FulfilledLaw,
 } from '../game/liveRule'
 import { palette } from '../game/palette'
-import { tailFor, wordsFor } from '../game/rule'
 import { rooms } from '../game/rooms'
 import { playCue } from '../game/sound'
+import { RoomIndex } from './RoomIndex'
 
 function read() {
   return {
@@ -35,29 +34,6 @@ function verdict(count: number, par: number) {
   if (count < par) return 'Sharper than the law itself.'
   if (count === par) return 'A perfect edict.'
   return 'The door is open. A shorter law exists.'
-}
-
-/** One cleared room's law, written out with the words that opened the door. */
-function LawLine({ law }: { law: FulfilledLaw }) {
-  const atPar = law.count <= law.room.par
-  return (
-    <li className="py-2">
-      <p className="text-[10px] tracking-[0.22em]" style={{ color: atPar ? palette.doorInk : palette.mute }}>
-        {atPar ? '●' : '○'} ROOM {law.room.id} · {law.room.title.toUpperCase()} · {law.count} OF {law.room.par}
-      </p>
-      <p className="law mt-0.5 text-sm leading-snug" style={{ color: palette.ink }}>
-        {law.room.clauses.map((clause) => {
-          const word = wordsFor(clause.slot, law.rule).find((entry) => entry.active)?.label ?? ''
-          return (
-            <span key={clause.slot}>
-              {clause.lead} <span style={{ color: palette.word }}>{word}</span>
-              {tailFor(clause, law.rule)}.{' '}
-            </span>
-          )
-        })}
-      </p>
-    </li>
-  )
 }
 
 export function WinBanner() {
@@ -139,16 +115,9 @@ export function WinBanner() {
               All {rooms.length} rooms are clear. {total} rewrites in all, {perfect} of {rooms.length} within the law.
             </p>
             <p className="mt-4 text-[10px] tracking-[0.3em]" style={{ color: palette.doorInk }}>
-              THE EDICT
+              THE EDICT · ROOM INDEX
             </p>
-            <ol
-              className="mt-1 max-h-[38dvh] overflow-y-auto border-y text-left"
-              style={{ borderColor: `${palette.doorInk}55` }}
-            >
-              {laws.map((law) => (
-                <LawLine key={law.room.id} law={law} />
-              ))}
-            </ol>
+            <RoomIndex />
             <div className="mt-4 flex flex-wrap justify-center gap-x-8 gap-y-1">
               <button
                 type="button"
@@ -167,6 +136,9 @@ export function WinBanner() {
                 PLAY AGAIN
               </button>
             </div>
+            <p className="mt-2 text-[10px] tracking-[0.12em]" style={{ color: palette.mute }}>
+              PLAY AGAIN restarts all 10 rooms. Room replay returns to this index. Best scores are kept.
+            </p>
           </div>
         )}
       </motion.div>
